@@ -1,7 +1,8 @@
 import os
 import json
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import boto3
 
 app = FastAPI()
@@ -17,23 +18,21 @@ app.add_middleware(
 # Handle POST requests to /approve
 @app.post('/approve')
 async def approve(booking_id: str, status: int):
-    # Publish the approval event to an SNS topic
-    topic_arn = os.getenv('topicArn') or 'arn:aws:sns:ap-southeast-2:867964100065:booking-approval-topic'
+    topic_arn = os.getenv('topicArn') 
     sns = boto3.client('sns')
-    try:
-        response = sns.publish(
+    response = sns.publish(
             TopicArn=topic_arn,
             Message=json.dumps({'bookingId': booking_id, 'status': status})
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        )   
+    return JSONResponse(status_code=200, 
+                        content=json.dumps({'message': 'Approval event published'}),
+                        media_type="application/json")
 
-    return {'message': 'Approval event published'}
 
 # Health Check 
-@app.get('/')
+@app.get('/health')
 async def health_check():
-    return {'message': 'OK'}
+    return JSONResponse(status_code=200, content="OK")
 
 if __name__ == '__main__':
     import uvicorn

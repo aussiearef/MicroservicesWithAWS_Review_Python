@@ -1,16 +1,16 @@
-FROM python:3.9
-WORKDIR /App
-
+FROM python
 COPY . ./
 
 RUN pip3 install --upgrade pip
 RUN pip3 install fastapi
 RUN pip3 install boto3
 
-RUN apt update
-RUN apt upgrade
-RUN apt install -y curl
+RUN apt update -y
+RUN apt upgrade -y
+RUN apt install curl -y
+
+ENV topicArn= 
 
 EXPOSE 80
 
-ENTRYPOINT ['python', 'Review.py']
+ENTRYPOINT ["python", "Review.py"]
